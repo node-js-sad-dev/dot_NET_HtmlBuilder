@@ -1,21 +1,26 @@
-﻿namespace HtmlBuilder
+﻿using HtmlBuilder.Elements;
+using HtmlBuilder.Elements.P;
+
+namespace HtmlBuilder
 {
     public static class Program
     {
         public static void Main(string[] args)
         {
-            HtmlBuilder div = new HtmlBuilder("div");
-            HtmlBuilder p = new HtmlBuilder("p")
-                .AddProperty("class", "test")
-                .AddProperty("data-test", "test")
-                .AddChild(new HtmlBuilder("ul").AddChild(new HtmlBuilder("li")));
-
-            div.AddChild(p)
-                .AddChild(p)
-                .AddChild(p)
-                .AddProperty("style", "color:blue");
+            HtmlElement div = new Div();
             
-            div.GenerateHtmlFile();
+            div.Properties.Add("single-attr-test", null);
+            div.Properties.Add("normal-attr-test", "test");
+
+            HtmlElement p = new P();
+            
+            p.Properties.Add("Text", "Test");
+            
+            div.NestedElements.Add(p);
+
+            var hb = (HtmlBuilder)div;
+            
+            hb.GenerateHtmlFile();
         }
     }
 }
