@@ -7,4 +7,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="src\Elements\BodyElements\WithoutNestedElements" />
+      <Folder Include="src\Utils" />
+    </ItemGroup>
+
 </Project>
