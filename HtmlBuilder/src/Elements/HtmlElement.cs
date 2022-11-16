@@ -15,6 +15,17 @@ public abstract class HtmlElement<T>
 
     public readonly string TagName;
 
+    public List<T> NestedElements
+    {
+        get => _nestedElements;
+        set
+        {
+            if (!CanHaveNestedElements) throw new HtmlElementCannotHaveNestedElements(TagName);
+
+            _nestedElements = value;
+        }
+    }
+
     protected HtmlElement(string tagName, bool isDouble, bool canHaveNestedElements)
     {
         TagName = tagName;
@@ -50,7 +61,7 @@ public abstract class HtmlElement<T>
         sb.Append(">\n");
 
         if (!IsDouble) return sb.ToString();
-        
+
         if (CanHaveNestedElements)
         {
             foreach (var element in _nestedElements)
@@ -66,7 +77,7 @@ public abstract class HtmlElement<T>
         }
 
         sb.Append($"</{TagName}>\n");
-        
+
         return sb.ToString();
     }
 }
