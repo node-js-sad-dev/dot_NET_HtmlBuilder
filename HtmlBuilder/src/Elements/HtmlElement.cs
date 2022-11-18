@@ -10,8 +10,10 @@ public abstract class HtmlElement<T>
 {
     public readonly bool IsDouble;
     public readonly bool CanHaveNestedElements;
-    private List<Property> _properties;
-    private List<T> _nestedElements;
+    protected List<Property> _properties;
+    protected List<T> _nestedElements;
+
+    protected readonly List<PropertyDescription> _allowedProperties;
 
     public readonly string TagName;
 
@@ -20,7 +22,7 @@ public abstract class HtmlElement<T>
         get => _nestedElements;
         set
         {
-            if (!CanHaveNestedElements) throw new HtmlElementCannotHaveNestedElements(TagName);
+            if (!CanHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
 
             _nestedElements = value;
         }
@@ -37,12 +39,29 @@ public abstract class HtmlElement<T>
 
     public void AddNestedElement(T nestedElement)
     {
+        if (!CanHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
+
         _nestedElements.Add(nestedElement);
     }
 
     public void RemoveNestedElement(T nestedElement)
     {
         _nestedElements.Remove(nestedElement);
+    }
+
+    public void AddProperty(Property property)
+    {
+        var canHaveSuchProperty =
+            _allowedProperties.Exists(x => x.name == property.Name && x.hasValue == property.HasValue);
+
+        if (!canHaveSuchProperty) throw new HtmlElementCannotHasSuchPropertyException<T>(property, this);
+        
+        _properties.Add(property);
+    }
+
+    public void RemoveProperty(Property property)
+    {
+        _properties.Remove(property);
     }
 
     public override string ToString()
@@ -73,7 +92,11 @@ public abstract class HtmlElement<T>
         {
             var textPropertyArr = _properties.Where(x => x.Name == "Text").ToList();
 
-            if (textPropertyArr.Count == 0) throw new HtmlElementDontHaveTextPropertyException(TagName);
+            if (textPropertyArr.Count == 0) throw new HtmlElementDontHaveTextPropertyException<T>(this);
+
+            var textProperty = textPropertyArr[0];
+
+            sb.Append($"{textProperty.Value}");
         }
 
         sb.Append($"</{TagName}>\n");

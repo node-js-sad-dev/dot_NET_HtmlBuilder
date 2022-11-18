@@ -2,7 +2,7 @@
 
 namespace HtmlBuilder.Properties;
 
-public class Property
+public sealed class Property
 {
     public readonly bool HasValue; // src="img_url" -> has value
     public readonly string Name;

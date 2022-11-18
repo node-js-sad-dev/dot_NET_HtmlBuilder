@@ -1,16 +1,19 @@
-﻿namespace HtmlBuilder.Exceptions.HtmlElementExceptions;
+﻿using HtmlBuilder.Elements;
 
-public class HtmlElementDontHaveTextPropertyException : Exception
+namespace HtmlBuilder.Exceptions.HtmlElementExceptions;
+
+public class HtmlElementDontHaveTextPropertyException<T> : Exception
+    where T : HtmlElement<T>
 {
-    private string TagName;
+    private readonly HtmlElement<T> _htmlElement;
 
-    public HtmlElementDontHaveTextPropertyException(string tagName)
+    public HtmlElementDontHaveTextPropertyException(HtmlElement<T> htmlElement)
     {
-        TagName = tagName;
+        _htmlElement = htmlElement;
     }
 
     public override string ToString()
     {
-        return $"{TagName} don`t have text property and is double tag";
+        return $"{_htmlElement.TagName} don`t have text property and is double tag";
     }
 }
