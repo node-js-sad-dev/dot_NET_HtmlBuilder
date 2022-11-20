@@ -1,8 +1,11 @@
-﻿namespace HtmlBuilder.Elements.BodyElements;
+﻿using HtmlBuilder.Properties;
+
+namespace HtmlBuilder.Elements.BodyElements;
 
 public abstract class BodyElement : HtmlElement<BodyElement>
 {
-    protected BodyElement(string tagName, bool isDouble, bool canHaveNestedElements) : base(tagName, isDouble, canHaveNestedElements)
+    protected BodyElement(string tagName, bool isDouble, bool canHaveNestedElements,
+        List<PropertyDescription> allowedProperties) : base(tagName, isDouble, canHaveNestedElements, allowedProperties)
     {
     }
 }

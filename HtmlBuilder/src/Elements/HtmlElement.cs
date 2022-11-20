@@ -8,45 +8,52 @@ namespace HtmlBuilder.Elements;
 public abstract class HtmlElement<T>
     where T : HtmlElement<T>
 {
-    public readonly bool IsDouble;
-    public readonly bool CanHaveNestedElements;
-    protected List<Property> _properties;
-    protected List<T> _nestedElements;
+    private readonly bool _isDouble;
+    private readonly bool _canHaveNestedElements;
+    private List<Property> _properties;
+    private List<T> _nestedElements;
 
-    protected readonly List<PropertyDescription> _allowedProperties;
+    private readonly List<PropertyDescription> _allowedProperties;
 
     public readonly string TagName;
 
-    public List<T> NestedElements
-    {
-        get => _nestedElements;
-        set
-        {
-            if (!CanHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
-
-            _nestedElements = value;
-        }
-    }
-
-    protected HtmlElement(string tagName, bool isDouble, bool canHaveNestedElements)
+    protected HtmlElement(string tagName, bool isDouble, bool canHaveNestedElements,
+        List<PropertyDescription> allowedProperties)
     {
         TagName = tagName;
-        IsDouble = isDouble;
-        CanHaveNestedElements = canHaveNestedElements;
+        _isDouble = isDouble;
+        _canHaveNestedElements = canHaveNestedElements;
         _properties = new List<Property>();
         _nestedElements = new List<T>();
+        _allowedProperties = allowedProperties;
     }
 
     public void AddNestedElement(T nestedElement)
     {
-        if (!CanHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
+        if (!_canHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
 
         _nestedElements.Add(nestedElement);
     }
 
     public void RemoveNestedElement(T nestedElement)
     {
+        if (!_canHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
+
         _nestedElements.Remove(nestedElement);
+    }
+
+    public void SetNestedElements(List<T> nestedElements)
+    {
+        if (!_canHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
+
+        _nestedElements = nestedElements;
+    }
+
+    public void ClearNestedElements()
+    {
+        if (!_canHaveNestedElements) throw new HtmlElementCannotHaveNestedElementsException<T>(this);
+
+        _nestedElements.Clear();
     }
 
     public void AddProperty(Property property)
@@ -55,7 +62,7 @@ public abstract class HtmlElement<T>
             _allowedProperties.Exists(x => x.name == property.Name && x.hasValue == property.HasValue);
 
         if (!canHaveSuchProperty) throw new HtmlElementCannotHasSuchPropertyException<T>(property, this);
-        
+
         _properties.Add(property);
     }
 
@@ -64,14 +71,34 @@ public abstract class HtmlElement<T>
         _properties.Remove(property);
     }
 
+    public void SetProperties(List<Property> properties)
+    {
+        foreach (var property in properties)
+        {
+            var canHaveSuchProperty =
+                _allowedProperties.Exists(x => x.name == property.Name && x.hasValue == property.HasValue);
+            
+            if (!canHaveSuchProperty) throw new HtmlElementCannotHasSuchPropertyException<T>(property, this);
+        }
+        
+        _properties = properties;
+    }
+
+    public void ClearProperties()
+    {
+        _properties.Clear();
+    }
+
     public override string ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 
         sb.Append($"<{TagName} ");
 
         foreach (var property in _properties)
         {
+            if (property.Name == "Text") continue;
+            
             sb.Append(property.HasValue
                 ? $"{property.Name}=\"{property.Value}\" "
                 : $"{property.Name} ");
@@ -79,9 +106,9 @@ public abstract class HtmlElement<T>
 
         sb.Append(">\n");
 
-        if (!IsDouble) return sb.ToString();
+        if (!_isDouble) return sb.ToString();
 
-        if (CanHaveNestedElements)
+        if (_canHaveNestedElements)
         {
             foreach (var element in _nestedElements)
             {
@@ -96,7 +123,7 @@ public abstract class HtmlElement<T>
 
             var textProperty = textPropertyArr[0];
 
-            sb.Append($"{textProperty.Value}");
+            sb.Append($"{textProperty.Value}\n");
         }
 
         sb.Append($"</{TagName}>\n");
