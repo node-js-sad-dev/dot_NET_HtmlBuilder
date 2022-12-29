@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="src\Elements\HeaderElements\WithNestedElements" />
       <Folder Include="src\Utils" />
     </ItemGroup>
 
